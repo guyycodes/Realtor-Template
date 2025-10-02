@@ -1,0 +1,759 @@
+"use client"
+
+import React, {
+useEffect,
+useRef,
+useState
+} from 'react'
+import Image from 'next/image'
+
+// -------------------------
+// Property Data
+// -------------------------
+const properties = [
+{
+id: 1,
+image: 'https://images.unsplash.com/photo-1613490493576-7fde63acd811?q=80&w=2071',
+price: '$8,500,000',
+location: 'Beverly Hills',
+type: 'Modern Villa',
+beds: 5,
+baths: 6,
+sqft: '8,200'
+},
+{
+id: 2,
+image: 'https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?q=80&w=2075',
+price: '$12,300,000',
+location: 'Malibu Beach',
+type: 'Oceanfront Estate',
+beds: 7,
+baths: 8,
+sqft: '12,500'
+},
+{
+id: 3,
+image: 'https://images.unsplash.com/photo-1512917774080-9991f1c4c750?q=80&w=2070',
+price: '$6,750,000',
+location: 'Hollywood Hills',
+type: 'Contemporary Mansion',
+beds: 4,
+baths: 5,
+sqft: '6,800'
+},
+{
+id: 4,
+image: 'https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?q=80&w=2053',
+price: '$9,200,000',
+location: 'Bel Air',
+type: 'Luxury Estate',
+beds: 6,
+baths: 7,
+sqft: '9,500'
+},
+{
+id: 5,
+image: 'https://images.unsplash.com/photo-1613977257363-707ba9348227?q=80&w=2070',
+price: '$15,500,000',
+location: 'Pacific Palisades',
+type: 'Architectural Marvel',
+beds: 8,
+baths: 10,
+sqft: '14,000'
+},
+{
+id: 6,
+image: 'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?q=80&w=2070',
+price: '$7,900,000',
+location: 'Venice Beach',
+type: 'Modern Beach House',
+beds: 4,
+baths: 4,
+sqft: '5,200'
+},
+{
+id: 7,
+image: 'https://images.unsplash.com/photo-1600566753190-17f0baa2a6c3?q=80&w=2070',
+price: '$11,200,000',
+location: 'Manhattan Beach',
+type: 'Coastal Paradise',
+beds: 5,
+baths: 6,
+sqft: '7,800'
+},
+{
+id: 8,
+image: 'https://images.unsplash.com/photo-1600607687644-aac4c3eac7f4?q=80&w=2071',
+price: '$18,700,000',
+location: 'Brentwood',
+type: 'Premier Estate',
+beds: 9,
+baths: 12,
+sqft: '16,000'
+}
+]
+
+// -------------------------
+// FibonacciSphere
+// -------------------------
+class FibonacciSphere {
+#points = []
+
+get points() {
+return this.#points
+}
+
+constructor(N) {
+const goldenAngle = Math.PI * (3 - Math.sqrt(5))
+for (let i = 0; i < N; i++) {
+const y = 1 - (i / (N - 1)) * 2
+const radius = Math.sqrt(1 - y ** 2)
+const a = goldenAngle * i
+const x = Math.cos(a) * radius
+const z = Math.sin(a) * radius
+this.#points.push([x, y, z])
+}
+}
+}
+
+// -------------------------
+// Quaternion Math Utilities
+// -------------------------
+function normalize(v) {
+const length = Math.sqrt(v[0] * v[0] + v[1] * v[1] + v[2] * v[2])
+if (length < 0.000001) return [0, 0, 0]
+return [v[0] / length, v[1] / length, v[2] / length]
+}
+
+function dot(a, b) {
+return a[0] * b[0] + a[1] * b[1] + a[2] * b[2]
+}
+
+function cross(a, b) {
+return [
+a[1] * b[2] - a[2] * b[1],
+a[2] * b[0] - a[0] * b[2],
+a[0] * b[1] - a[1] * b[0]
+]
+}
+
+// Convert axis-angle to quaternion
+function axisAngleToQuat(axis, angle) {
+const half = angle * 0.5
+const s = Math.sin(half)
+return [axis[0] * s, axis[1] * s, axis[2] * s, Math.cos(half)]
+}
+
+// Spherical linear interpolation of quaternions
+function slerp(q1, q2, t) {
+let [x1, y1, z1, w1] = q1
+let [x2, y2, z2, w2] = q2
+
+let cosTheta = x1 * x2 + y1 * y2 + z1 * z2 + w1 * w2
+if (cosTheta < 0) {
+x2 = -x2
+y2 = -y2
+z2 = -z2
+w2 = -w2
+cosTheta = -cosTheta
+}
+
+if (cosTheta > 0.9995) {
+const x = x1 + t * (x2 - x1)
+const y = y1 + t * (y2 - y1)
+const z = z1 + t * (z2 - z1)
+const w = w1 + t * (w2 - w1)
+const len = Math.sqrt(x * x + y * y + z * z + w * w)
+return [x / len, y / len, z / len, w / len]
+}
+
+const theta0 = Math.acos(cosTheta)
+const theta = theta0 * t
+const sinTheta = Math.sin(theta)
+const sinTheta0 = Math.sin(theta0)
+
+const s0 = Math.cos(theta) - cosTheta * (sinTheta / sinTheta0)
+const s1 = sinTheta / sinTheta0
+
+return [
+x1 * s0 + x2 * s1,
+y1 * s0 + y2 * s1,
+z1 * s0 + z2 * s1,
+w1 * s0 + w2 * s1
+]
+}
+
+// Rotate a 3D point by quaternion
+function rotatePointByQuat(p, q) {
+const [px, py, pz] = p
+const [qx, qy, qz, qw] = q
+
+const uvx = qy * pz - qz * py
+const uvy = qz * px - qx * pz
+const uvz = qx * py - qy * px
+
+const uuvx = qy * uvz - qz * uvy
+const uuvy = qz * uvx - qx * uvz
+const uuvz = qx * uvy - qy * uvx
+
+const w2 = qw * 2.0
+return [
+px + uvx * w2 + uuvx * 2.0,
+py + uvy * w2 + uuvy * 2.0,
+pz + uvz * w2 + uuvz * 2.0
+]
+}
+
+// -------------------------
+// QuantumPropertyCloud Class
+// -------------------------
+class QuantumPropertyCloud {
+constructor(root, propsData, sphereScale = 1) {
+this.root = root
+this.propsData = propsData
+this.sphereScale = sphereScale
+
+this.N = propsData.length
+this.sphere = new FibonacciSphere(this.N)
+
+// Rotation state
+this.currentQuat = [0, 0, 0, 1]
+this.targetQuat = [0, 0, 0, 1]
+this.rotationProgress = 1.0
+
+// Continuous ambient rotation
+this.ambientRotation = 0
+this.frameId = null
+
+// DOM elements
+this.elements = Array.from(root.querySelectorAll('.q-prop-item'))
+
+// Keep track of which item is selected
+this.focusedIndex = 0
+
+this.updatePositions()
+this.start()
+}
+
+focusOnIndex(index) {
+if (index < 0 || index >= this.N) return
+
+this.focusedIndex = index
+
+const front = [0, 0, 1]
+const p = this.sphere.points[index]
+const pn = normalize(p)
+
+let cosA = dot(pn, front)
+if (cosA > 1) cosA = 1
+if (cosA < -1) cosA = -1
+const angle = Math.acos(cosA)
+
+if (angle < 0.0001) return
+
+let axis = cross(pn, front)
+axis = normalize(axis)
+
+const focusQuat = axisAngleToQuat(axis, angle)
+this.targetQuat = focusQuat
+this.rotationProgress = 0
+}
+
+updatePositions() {
+// Smooth interpolation to the target orientation
+if (this.rotationProgress < 1) {
+const t = this.rotationProgress
+const easedT = 1 - Math.pow(1 - t, 3) // cubic ease
+const newQ = slerp(this.currentQuat, this.targetQuat, easedT)
+this.currentQuat = newQ
+}
+
+// Ambient rotation only for orbiting items
+this.ambientRotation += 0.001
+const ambientQuat = axisAngleToQuat([0, 1, 0], this.ambientRotation)
+
+const N = this.N
+for (let i = 0; i < N; i++) {
+  const el = this.elements[i]
+  if (!el) continue
+
+  // If this item is the focused one, pin it front/center with a bigger scale
+  if (i === this.focusedIndex) {
+    // We still rotate it by currentQuat so it transitions from orbit to center
+    const [x, y, z] = this.sphere.points[i]
+    let rotated = rotatePointByQuat([x, y, z], this.currentQuat)
+    // Intentionally do NOT apply ambient rotation so it stays in place
+    const rx = rotated[0] * this.sphereScale
+    const ry = rotated[1] * this.sphereScale
+    const rz = rotated[2] * this.sphereScale
+
+    const depth = 6
+    const perspective = depth / (depth - (rz * 3.5))
+
+    // Calculate screen position
+    const translateX = rx * perspective * (this.root.offsetWidth / 3.5)
+    const translateY = ry * perspective * (this.root.offsetHeight / 3.5)
+
+    const centerX = this.root.offsetWidth / 2
+    const centerY = this.root.offsetHeight / 2 - 80
+
+    // Pinned front-center styling
+    const scale = 1.5
+    el.style.transform = `
+      translate(${centerX + translateX}px, ${centerY + translateY}px)
+      scale(${scale})
+    `
+    el.style.zIndex = 9999
+    el.style.opacity = 1
+    el.style.filter = 'none'
+    el.classList.add('quantum-front')
+  } else {
+    // All other items continue orbiting with the ambient rotation
+    const [x, y, z] = this.sphere.points[i]
+    let rotated = rotatePointByQuat([x, y, z], this.currentQuat)
+    rotated = rotatePointByQuat(rotated, ambientQuat)
+
+    const rx = rotated[0] * this.sphereScale
+    const ry = rotated[1] * this.sphereScale
+    const rz = rotated[2] * this.sphereScale
+
+    // Enhanced perspective
+    const depth = 6
+    const perspective = depth / (depth - (rz * 3.5))
+    const translateX = rx * perspective * (this.root.offsetWidth / 3.5)
+    const translateY = ry * perspective * (this.root.offsetHeight / 3.5)
+
+    const centerX = this.root.offsetWidth / 2
+    const centerY = this.root.offsetHeight / 2 - 80
+
+    const depthFactor = (rz + 1) / 2
+    const baseScale = 0.2 + depthFactor * 0.6
+    const scale = baseScale * perspective * 0.7
+
+    el.style.transform = `
+      translate(${centerX + translateX}px, ${centerY + translateY}px)
+      scale(${scale})
+      rotateY(${rz * 15}deg)
+      translateZ(${rz * 200}px)
+    `
+    el.style.zIndex = Math.floor((rz + 2) * 1000)
+    el.style.opacity = Math.max(0.15, 1 - Math.abs(rz) * 0.6)
+    el.style.filter = rz < -0.5 ? `blur(${Math.abs(rz + 0.5) * 2}px)` : 'none'
+    el.classList.remove('quantum-front')
+  }
+}
+}
+
+start() {
+const animate = () => {
+if (this.rotationProgress < 1) {
+this.rotationProgress += 0.025
+if (this.rotationProgress > 1) {
+this.rotationProgress = 1
+}
+}
+this.updatePositions()
+this.frameId = requestAnimationFrame(animate)
+}
+animate()
+}
+
+stop() {
+if (this.frameId) cancelAnimationFrame(this.frameId)
+}
+
+destroy() {
+this.stop()
+}
+}
+
+// -------------------------
+// Main Component
+// -------------------------
+export default function QuantumImmersiveSection() {
+const sectionRef = useRef(null)
+const sphereRef = useRef(null)
+const cloudRef = useRef(null)
+
+const [currentIndex, setCurrentIndex] = useState(0)
+const [isHovered, setIsHovered] = useState(false)
+const [isInView, setIsInView] = useState(false)
+const [scrollProgress, setScrollProgress] = useState(0)
+
+// Enhanced flares or particles (optional)
+const [particles] = useState(
+[...Array(60)].map((_, i) => ({
+id: i,
+x: Math.random() * 100,
+y: Math.random() * 100,
+z: Math.random() * 100,
+speed: 0.2 + Math.random() * 0.8
+}))
+)
+
+// Initialize quantum cloud
+useEffect(() => {
+if (sphereRef.current && !cloudRef.current) {
+cloudRef.current = new QuantumPropertyCloud(
+sphereRef.current,
+properties,
+1.0 // sphere scale
+)
+cloudRef.current.focusOnIndex(0)
+}
+
+return () => {
+  if (cloudRef.current) {
+    cloudRef.current.destroy()
+    cloudRef.current = null
+  }
+}
+}, [])
+
+// Track when section is in view, to enable wheel interaction
+useEffect(() => {
+const handleScroll = () => {
+if (!sectionRef.current) return
+const rect = sectionRef.current.getBoundingClientRect()
+const windowHeight = window.innerHeight
+
+  const isVisible = rect.top < windowHeight && rect.bottom > 0
+  setIsInView(isVisible)
+
+  const totalHeight = rect.height
+  const scrolled = -rect.top
+  let ratio = scrolled / (totalHeight || 1)
+  ratio = Math.max(0, Math.min(1, ratio))
+  setScrollProgress(ratio)
+}
+
+handleScroll()
+window.addEventListener('scroll', handleScroll)
+return () => window.removeEventListener('scroll', handleScroll)
+}, [])
+
+// Scroll-wheel only navigation (radio buttons). No clicks or arrow keys.
+useEffect(() => {
+let wheelTimeout
+const wheelAccumulator = { value: 0 }
+
+const onWheel = (e) => {
+  if (!sphereRef.current || !isHovered || !isInView) return
+
+  e.preventDefault()
+  e.stopPropagation()
+
+  wheelAccumulator.value += e.deltaY
+
+  clearTimeout(wheelTimeout)
+  wheelTimeout = setTimeout(() => {
+    if (Math.abs(wheelAccumulator.value) > 50) {
+      const direction = wheelAccumulator.value > 0 ? 1 : -1
+      setCurrentIndex((prev) => {
+        const next = (prev + direction + properties.length) % properties.length
+        if (cloudRef.current) {
+          cloudRef.current.focusOnIndex(next)
+        }
+        return next
+      })
+    }
+    wheelAccumulator.value = 0
+  }, 50)
+}
+
+window.addEventListener('wheel', onWheel, { passive: false })
+return () => {
+  window.removeEventListener('wheel', onWheel)
+  clearTimeout(wheelTimeout)
+}
+}, [isHovered, isInView])
+
+const currentProperty = properties[currentIndex]
+
+return (
+<section
+   ref={sectionRef}
+   className="relative min-h-[120vh] bg-gradient-to-b from-black via-gray-900 to-black overflow-hidden"
+ >
+{/* Sticky Viewport /}
+<div className="sticky top-0 w-full h-screen">
+<div className="absolute inset-0">
+{/ Dynamic Background Gradients */}
+<div className="absolute inset-0">
+<div
+className="absolute top-1/3 left-1/4 w-[800px] h-[800px] rounded-full blur-[150px]"
+style={{
+background: 'radial-gradient(circle, rgba(59,130,246,0.3), transparent)',
+transform: translate(${Math.sin(scrollProgress * Math.PI * 2) * 150}px, ${                   Math.cos(scrollProgress * Math.PI * 2) * 100                 }px) scale(${1 + scrollProgress * 0.5}),
+opacity: 0.6
+}}
+/>
+<div
+className="absolute bottom-1/3 right-1/4 w-[700px] h-[700px] rounded-full blur-[150px]"
+style={{
+background: 'radial-gradient(circle, rgba(212,175,55,0.3), transparent)',
+transform: translate(${                   -Math.cos(scrollProgress * Math.PI * 2) * 150                 }px, ${Math.sin(scrollProgress * Math.PI * 2) * 100}px) scale(${                   1 + scrollProgress * 0.3                 }),
+opacity: 0.6
+}}
+/>
+<div
+className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[1000px] h-[1000px] rounded-full blur-[200px]"
+style={{
+background: 'radial-gradient(circle, rgba(147,51,234,0.2), transparent)',
+transform: rotate(${scrollProgress * 180}deg) scale(${                   1.2 + Math.sin(scrollProgress * Math.PI) * 0.3                 }),
+opacity: 0.4
+}}
+/>
+</div>
+
+      {/* 3D Grid Floor */}
+      <div className="absolute bottom-0 left-0 right-0 h-3/4">
+        <div
+          className="absolute inset-0 origin-bottom"
+          style={{
+            transform: `perspective(800px) rotateX(70deg) translateZ(-150px) translateY(100px)`,
+            background: `
+              repeating-linear-gradient(
+                90deg,
+                transparent,
+                transparent 59px,
+                rgba(212,175,55,0.15) 59px,
+                rgba(212,175,55,0.15) 61px
+              ),
+              repeating-linear-gradient(
+                0deg,
+                transparent,
+                transparent 59px,
+                rgba(212,175,55,0.15) 59px,
+                rgba(212,175,55,0.15) 61px
+              )
+            `,
+            backgroundSize: '60px 60px',
+            backgroundPosition: `${scrollProgress * 60}px ${scrollProgress * 60}px`,
+            opacity: 0.7
+          }}
+        >
+          <div
+            className="absolute inset-0"
+            style={{
+              background: 'radial-gradient(ellipse at center top, rgba(212,175,55,0.3), transparent 60%)',
+              animation: 'pulse 4s ease-in-out infinite'
+            }}
+          />
+        </div>
+      </div>
+
+      {/* Floating Particles */}
+      <div className="absolute inset-0 pointer-events-none">
+        {particles.map((particle) => (
+          <div
+            key={particle.id}
+            className="absolute w-1 h-1 bg-accent-gold/60 rounded-full"
+            style={{
+              left: `${particle.x}%`,
+              top: `${particle.y}%`,
+              transform: `
+                translateZ(${particle.z}px)
+                translateY(${Math.sin((Date.now() * 0.001 * particle.speed) + particle.id) * 30}px)
+                translateX(${Math.cos((Date.now() * 0.001 * particle.speed) + particle.id) * 20}px)
+              `,
+              opacity: 0.4 + Math.sin((Date.now() * 0.001) + particle.id) * 0.3
+            }}
+          />
+        ))}
+      </div>
+
+      {/* Quantum Sphere Container */}
+      <div
+        ref={sphereRef}
+        className="absolute inset-0 w-full h-full"
+        onMouseEnter={() => setIsHovered(true)}
+        onMouseLeave={() => setIsHovered(false)}
+        style={{
+          cursor: isHovered ? 'grab' : 'default'
+        }}
+      >
+        {/* Property Items */}
+        {properties.map((prop, index) => (
+          <div
+            key={prop.id}
+            className="q-prop-item absolute -translate-x-1/2 -translate-y-1/2 transition-all duration-500"
+            style={{
+              width: '260px',
+              height: '360px',
+              willChange: 'transform, opacity'
+            }}
+          >
+            <div className="relative w-full h-full group">
+              {/* Card Container */}
+              <div className="relative w-full h-full overflow-hidden rounded-2xl bg-gradient-to-b from-gray-900/90 to-black/90 backdrop-blur-sm border border-white/10">
+                {/* Image */}
+                <div className="relative h-[60%] overflow-hidden">
+                  <Image
+                    src={prop.image}
+                    alt={prop.type}
+                    fill
+                    priority={index <= 3}
+                    sizes="260px"
+                    className="object-cover"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent" />
+                  {/* Badge */}
+                  <div className="absolute top-4 left-4 px-3 py-1 bg-black/60 backdrop-blur-sm rounded-full">
+                    <span className="text-accent-gold text-xs font-semibold">EXCLUSIVE</span>
+                  </div>
+                </div>
+
+                {/* Content */}
+                <div className="absolute bottom-0 w-full p-5 bg-gradient-to-t from-black via-black/90 to-transparent">
+                  <h3 className="text-2xl font-light text-white mb-1">
+                    {prop.price}
+                  </h3>
+                  <p className="text-accent-gold font-medium mb-2">
+                    {prop.type}
+                  </p>
+                  <p className="text-white/70 text-sm mb-3">
+                    {prop.location}
+                  </p>
+                  <div className="flex gap-4 text-xs text-white/60">
+                    <span>{prop.beds} beds</span>
+                    <span>{prop.baths} baths</span>
+                    <span>{prop.sqft} sqft</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* Center Focus Decor (purely visual) */}
+      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 pointer-events-none">
+        <div className="text-center">
+          <div className="w-32 h-32 mx-auto mb-8 relative">
+            <div className="absolute inset-0 border-2 border-accent-gold/30 rounded-full animate-pulse" />
+            <div className="absolute inset-2 border border-white/20 rounded-full animate-pulse animation-delay-200" />
+            <div className="absolute inset-4 border border-accent-gold/20 rounded-full animate-pulse animation-delay-400" />
+          </div>
+        </div>
+      </div>
+
+      {/* Bottom UI */}
+      <div className="absolute bottom-0 left-0 right-0 p-8">
+        <div className="max-w-7xl mx-auto">
+          <div className="flex items-center justify-between">
+            {/* Progress/Radio Buttons (but not clickable) */}
+            <div className="flex items-center gap-6">
+              <div className="flex gap-3">
+                {properties.map((_, i) => (
+                  // Replace <button> with a <div> so we don't allow direct clicking
+                  <div
+                    key={i}
+                    className="relative group select-none pointer-events-none" 
+                    // pointer-events-none ensures no mouse interaction
+                  >
+                    <div
+                      className="w-2 h-2 rounded-full transition-all duration-500"
+                      style={{
+                        backgroundColor:
+                          i === currentIndex
+                            ? '#d4af37'
+                            : 'rgba(255,255,255,0.2)',
+                        transform: `scale(${i === currentIndex ? 1.5 : 1})`,
+                        boxShadow:
+                          i === currentIndex
+                            ? '0 0 20px rgba(212,175,55,0.8)'
+                            : 'none'
+                      }}
+                    />
+                    {i === currentIndex && (
+                      <div className="absolute inset-0 w-2 h-2 rounded-full bg-accent-gold/50 animate-ping" />
+                    )}
+                  </div>
+                ))}
+              </div>
+
+              {/* Current Property Info */}
+              <div className="text-white pl-8 border-l border-white/20">
+                <p className="text-sm text-white/60 mb-1">Currently Viewing</p>
+                <p className="text-lg font-light">{currentProperty.type}</p>
+                <p className="text-accent-gold">{currentProperty.location}</p>
+              </div>
+            </div>
+
+            {/* Interaction Hint */}
+            <div className="text-right">
+              <div className="text-white/60 text-sm animate-pulse">
+                {isHovered ? (
+                  <div className="flex items-center gap-2">
+                    <span>Scroll to explore</span>
+                    <svg
+                      className="w-4 h-4"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M19 14l-7 7m0 0l-7-7m7 7V3"
+                      />
+                    </svg>
+                  </div>
+                ) : (
+                  <div className="flex items-center gap-2">
+                    <span>Hover to interact</span>
+                    <svg
+                      className="w-4 h-4"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M15 15l-2 5L9 9l11 4-5 2z"
+                      />
+                    </svg>
+                  </div>
+                )}
+              </div>
+              <div className="mt-2 text-xs text-white/40">
+                Scroll wheel only
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  {/* Styles */}
+  <style jsx>{`
+    @keyframes pulse {
+      0%, 100% { opacity: 0.5; }
+      50% { opacity: 0.8; }
+    }
+    @keyframes glow {
+      0%, 100% { 
+        filter: drop-shadow(0 0 40px rgba(212, 175, 55, 0.5));
+      }
+      50% { 
+        filter: drop-shadow(0 0 60px rgba(212, 175, 55, 0.8));
+      }
+    }
+    .animation-delay-200 {
+      animation-delay: 200ms;
+    }
+    .animation-delay-400 {
+      animation-delay: 400ms;
+    }
+    :global(.quantum-front) {
+      animation: glow 2s ease-in-out infinite;
+    }
+  `}</style>
+</section>
+)
+}
