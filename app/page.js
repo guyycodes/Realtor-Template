@@ -3,7 +3,7 @@ import Image from 'next/image'
 import { FaHome, FaHandshake, FaChartLine, FaUsers, FaStar, FaQuoteLeft, FaArrowRight, FaCheck, FaTrophy, FaPhone, FaEnvelope } from 'react-icons/fa'
 import PropertyCard from '@/components/PropertyCard'
 import TestimonialCard from '@/components/TestimonialCard'
-import QuantumImmersiveSection from '@/components/QuantumImmersiveSection'
+import ResponsiveQuantumSection from '@/components/ResponsiveQuantumSection'
 
 export const metadata = {
   title: 'Sarah Thompson - Luxury Real Estate Agent | Your Dream Home Awaits',
@@ -214,7 +214,7 @@ export default function Home() {
       </section>
 
       {/* Quantum Immersive Property Experience Section */}
-      <QuantumImmersiveSection />
+      <ResponsiveQuantumSection />
 
       {/* Why Choose Section - Luxe Minimal */}
       <section className="py-32 bg-white">

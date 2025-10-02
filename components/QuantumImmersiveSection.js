@@ -235,10 +235,13 @@ function rotatePointByQuat(p, q) {
 // Main class managing the 3D sphere of property cards.
 // Handles rotation, positioning, and animation of all cards.
 class QuantumPropertyCloud {
-  constructor(root, propsData, sphereScale = 1) {
+  constructor(root, propsData, sphereScale = 1, frontScale = 1.5, frontXOffset = 0, frontYOffset = 0) {
     this.root = root  // Container DOM element
     this.propsData = propsData  // Array of property data
     this.sphereScale = sphereScale  // Scale factor for sphere size
+    this.frontScale = frontScale  // Scale factor for focused item
+    this.frontXOffset = frontXOffset  // X offset for focused item on smaller screens
+    this.frontYOffset = frontYOffset  // Y offset for focused item on smaller screens
 
     this.N = propsData.length  // Number of properties
     this.sphere = new FibonacciSphere(this.N)  // Generate 3D positions
@@ -335,12 +338,12 @@ class QuantumPropertyCloud {
         const translateX = rx * perspective * (this.root.offsetWidth / 3.5)
         const translateY = ry * perspective * (this.root.offsetHeight / 3.5)
 
-        // Center point of container (slightly raised)
-        const centerX = this.root.offsetWidth / 2
-        const centerY = this.root.offsetHeight / 2 - 80  // Offset up by 80px
+        // Center point of container (slightly raised) with X offset for smaller screens
+        const centerX = this.root.offsetWidth / 2 + this.frontXOffset
+        const centerY = this.root.offsetHeight / 2 - 80 + this.frontYOffset  // Offset up by 80px
 
         // Focused item gets larger scale
-        const scale = 1.5
+        const scale = this.frontScale
         el.style.transform = `
           translate(${centerX + translateX}px, ${centerY + translateY}px)
           scale(${scale})
@@ -421,7 +424,7 @@ class QuantumPropertyCloud {
 // -------------------------
 // Main Component
 // -------------------------
-export default function QuantumImmersiveSection() {
+export default function QuantumImmersiveSection({ frontScale = 1.5, frontXOffset = 0, frontYOffset = 0 }) {
   const sectionRef = useRef(null)
   const sphereRef = useRef(null)
   const cloudRef = useRef(null)
@@ -451,7 +454,10 @@ export default function QuantumImmersiveSection() {
       cloudRef.current = new QuantumPropertyCloud(
         sphereRef.current,  // Container element
         properties,         // Property data array
-        1.0                // Sphere scale factor
+        1.0,               // Sphere scale factor
+        frontScale,        // Front item scale
+        frontXOffset,       // Front item X offset
+        frontYOffset,       // Front item Y offset
       )
       cloudRef.current.focusOnIndex(0)  // Start with first property focused
     }
@@ -884,11 +890,11 @@ Trophy properties in Brentwood consistently outperform market. Expected 12-15% a
           </div>
 
           {/* Bottom UI - Navigation indicators and property info */}
-          <div className="absolute bottom-0 left-0 right-0 p-8">
-            <div className="max-w-7xl mx-auto">
-              <div className="flex items-center justify-between">
+          <div className="absolute bottom-0 left-0 right-0 p-8" style={{ zIndex: 10001 }}>
+            <div className="max-w-7xl mx-auto relative">
+              <div className="flex items-center justify-between flex-wrap gap-4">
                 {/* Progress Indicators - Clickable radio buttons AND scroll-wheel navigation */}
-                <div className="flex items-center gap-6">
+                <div className="flex items-center gap-6" style={{ position: 'relative', zIndex: 10002 }}>
                   <div className="flex gap-3">
                     {properties.map((_, i) => (
                       // CLICKABLE radio button indicators
@@ -929,7 +935,7 @@ Trophy properties in Brentwood consistently outperform market. Expected 12-15% a
                   </div>
 
                   {/* Current Property Info with AI Button */}
-                  <div className="text-white pl-8 border-l border-white/20 flex items-center gap-4">
+                  <div className="text-white sm:pl-8 sm:border-l border-white/20 flex items-center gap-4 w-full sm:w-auto">
                     <div>
                       <p className="text-sm text-white/60 mb-1">Currently Viewing</p>
                       <p className="text-lg font-light">{currentProperty.type}</p>
@@ -944,6 +950,7 @@ Trophy properties in Brentwood consistently outperform market. Expected 12-15% a
                           ? 'bg-gradient-to-r from-accent-gold/30 to-yellow-600/30 border-accent-gold/50' 
                           : 'bg-gradient-to-r from-accent-gold/10 to-yellow-600/10 hover:from-accent-gold/20 hover:to-yellow-600/20 border-accent-gold/30'
                       }`}
+                      style={{ position: 'relative', zIndex: 10002 }}
                     >
                       <div className="relative">
                         <svg className="w-4 h-4 text-accent-gold" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -960,7 +967,7 @@ Trophy properties in Brentwood consistently outperform market. Expected 12-15% a
                 </div>
 
                 {/* Interaction Hints - Guide users on how to navigate */}
-                <div className="text-right">
+                <div className="text-right hidden sm:block">
                   <div className="text-white/60 text-sm animate-pulse">
                     {isHovered ? (
                       // Show scroll hint when hovering
@@ -1010,17 +1017,39 @@ Trophy properties in Brentwood consistently outperform market. Expected 12-15% a
             
             {/* Inline AI Analysis Display */}
             {showAIAnalysis && (
-              <div className="max-w-7xl mx-auto mt-4 relative z-[10000]">
-                <TypewriterDisplay 
-                  text={aiAnalysisText}
-                  speed={35}
-                  onComplete={() => {
-                    setShowAIAnalysis(false)
-                    setAiAnalysisText('')
-                  }}
-                  inline={true}
-                />
-              </div>
+              <>
+                {/* Mobile: Absolute positioning above controls */}
+                <div className="lg:hidden absolute -bottom-1/2 mb-4 left-0 right-0 px-8 pointer-events-none" style={{ zIndex: 10003 }}>
+                  <div className="max-w-7xl mx-auto">
+                    <div className="w-full max-w-sm bg-black/90 backdrop-blur-sm rounded-lg p-4 pointer-events-auto">
+                      <TypewriterDisplay 
+                        text={aiAnalysisText}
+                        speed={35}
+                        onComplete={() => {
+                          setShowAIAnalysis(false)
+                          setAiAnalysisText('')
+                        }}
+                        inline={true}
+                      />
+                    </div>
+                  </div>
+                </div>
+                
+                {/* Desktop: Inline positioning below controls */}
+                <div className="hidden lg:block max-w-7xl mx-auto mt-4 relative" style={{ zIndex: 10003 }}>
+                  <div className="w-full max-w-2xl">
+                    <TypewriterDisplay 
+                      text={aiAnalysisText}
+                      speed={35}
+                      onComplete={() => {
+                        setShowAIAnalysis(false)
+                        setAiAnalysisText('')
+                      }}
+                      inline={true}
+                    />
+                  </div>
+                </div>
+              </>
             )}
           </div>
         </div>
