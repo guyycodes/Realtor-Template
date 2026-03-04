@@ -4,6 +4,8 @@ import { useState } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
 import { FaSearch, FaFilter, FaTh, FaThList, FaBed, FaBath, FaRulerCombined, FaMapMarkerAlt, FaArrowRight } from 'react-icons/fa'
+import { BookingWidget } from '@/hooks/useWidgetfied'
+import AnimatedSection from '@/components/AnimatedSection'
 
 export default function Properties() {
   const [viewMode, setViewMode] = useState('grid')
@@ -150,7 +152,7 @@ export default function Properties() {
           }}></div>
         </div>
         
-        <div className="relative z-10 container-custom">
+        <AnimatedSection animation="fade-up" threshold={0.05} className="relative z-10 container-custom">
           <span className="inline-block text-accent-gold text-sm tracking-[0.3em] uppercase font-light mb-6">
             Curated Collection
           </span>
@@ -161,7 +163,7 @@ export default function Properties() {
           <p className="text-xl text-neutral-300 font-light max-w-2xl">
             Discover Southern California's most prestigious addresses
           </p>
-        </div>
+        </AnimatedSection>
       </section>
 
       {/* Search and Filter Bar - Luxury Style */}
@@ -259,8 +261,8 @@ export default function Properties() {
       <section className="py-32 bg-white">
         <div className="container-custom">
           <div className={`grid ${viewMode === 'grid' ? 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3' : 'grid-cols-1'} gap-10`}>
-            {properties.map((property) => (
-              <div key={property.id} className="group cursor-pointer">
+            {properties.map((property, index) => (
+              <AnimatedSection key={property.id} animation="fade-up" delay={(index % 3) * 100} className="group cursor-pointer">
                 <div className="relative overflow-hidden bg-neutral-900 aspect-[4/3]">
                   <Image
                     src={property.image}
@@ -319,7 +321,7 @@ export default function Properties() {
                     {property.description}
                   </p>
                 </div>
-              </div>
+              </AnimatedSection>
             ))}
           </div>
 
@@ -351,7 +353,7 @@ export default function Properties() {
 
       {/* CTA Section - Sophisticated Appeal */}
       <section className="py-24 bg-neutral-50">
-        <div className="container-custom text-center">
+        <AnimatedSection animation="fade-up" className="container-custom text-center">
           <h2 className="text-3xl md:text-4xl font-display font-light text-neutral-900 mb-2">
             Looking for Something Specific?
           </h2>
@@ -360,14 +362,8 @@ export default function Properties() {
             Access our exclusive off-market properties and pocket listings. 
             Let me know your requirements for a personalized property search.
           </p>
-          <Link 
-            href="/contact" 
-            className="group relative px-10 py-4 bg-black text-white font-medium tracking-wider uppercase text-sm overflow-hidden transition-all duration-300 inline-block"
-          >
-            <span className="relative z-10">Schedule Private Viewing</span>
-            <div className="absolute inset-0 bg-accent-gold transform -translate-x-full group-hover:translate-x-0 transition-transform duration-300"></div>
-          </Link>
-        </div>
+          <BookingWidget id="properties-viewing-booking" className="inline-block" />
+        </AnimatedSection>
       </section>
     </>
   )

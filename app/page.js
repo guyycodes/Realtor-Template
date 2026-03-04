@@ -4,6 +4,8 @@ import { FaHome, FaHandshake, FaChartLine, FaUsers, FaStar, FaQuoteLeft, FaArrow
 import PropertyCard from '@/components/PropertyCard'
 import TestimonialCard from '@/components/TestimonialCard'
 import ResponsiveQuantumSection from '@/components/ResponsiveQuantumSection'
+import { BookingWidget } from '@/hooks/useWidgetfied'
+import AnimatedSection from '@/components/AnimatedSection'
 
 export const metadata = {
   title: 'Sarah Thompson - Luxury Real Estate Agent | Your Dream Home Awaits',
@@ -130,7 +132,7 @@ export default function Home() {
           <div className="container-custom">
             <div className="grid lg:grid-cols-2 gap-16 items-center">
               {/* Left Content - Refined Typography */}
-              <div className="text-center lg:text-left">
+              <AnimatedSection animation="fade-up" threshold={0.05} className="text-center lg:text-left">
                 <div className="mb-8">
                   <span className="inline-block text-accent-gold text-sm tracking-[0.3em] uppercase font-light mb-6">
                     Southern California's Elite Agent
@@ -157,9 +159,7 @@ export default function Home() {
                     <span className="relative z-10">Explore Listings</span>
                     <div className="absolute inset-0 bg-accent-gold transform -translate-x-full group-hover:translate-x-0 transition-transform duration-300"></div>
                   </Link>
-                  <Link href="/contact" className="px-8 py-4 border border-white/30 text-white font-medium tracking-wider uppercase text-sm hover:bg-white hover:text-black transition-all duration-300">
-                    Private Consultation
-                  </Link>
+                  <BookingWidget id="hero-booking" className="inline-block" />
                 </div>
 
                 {/* Stats - Minimalist Design */}
@@ -171,10 +171,10 @@ export default function Home() {
                     </div>
                   ))}
                 </div>
-              </div>
+              </AnimatedSection>
 
               {/* Right Image - Premium Presentation */}
-              <div className="relative">
+              <AnimatedSection animation="fade-left" delay={200} threshold={0.05} className="relative">
                 <div className="relative max-w-lg mx-auto">
                   {/* Frame decoration */}
                   <div className="absolute -inset-4 border border-accent-gold/20"></div>
@@ -201,7 +201,7 @@ export default function Home() {
                     </div>
                   </div>
                 </div>
-              </div>
+              </AnimatedSection>
             </div>
           </div>
         </div>
@@ -219,7 +219,7 @@ export default function Home() {
       {/* Why Choose Section - Luxe Minimal */}
       <section className="py-32 bg-white">
         <div className="container-custom">
-          <div className="text-center mb-20">
+          <AnimatedSection animation="fade-up" className="text-center mb-20">
             <h2 className="text-4xl md:text-5xl font-display font-light text-neutral-900 mb-4">
               Why Choose Sarah Thompson
             </h2>
@@ -227,19 +227,19 @@ export default function Home() {
             <p className="text-xl text-neutral-600 font-light max-w-2xl mx-auto">
               Personalized real estate solutions with a luxury touch
             </p>
-          </div>
+          </AnimatedSection>
 
           <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
             {features.map((feature, index) => {
               const Icon = feature.icon
               return (
-                <div key={index} className="text-center p-8 group">
+                <AnimatedSection key={index} animation="fade-up" delay={index * 100} className="text-center p-8 group">
                   <div className="w-20 h-20 mx-auto mb-6 border border-neutral-200 rounded-full flex items-center justify-center group-hover:border-accent-gold transition-colors duration-300">
                     <Icon className="text-2xl text-neutral-400 group-hover:text-accent-gold transition-colors duration-300" />
                   </div>
                   <h3 className="text-lg font-medium mb-3 tracking-wide">{feature.title}</h3>
                   <p className="text-neutral-500 font-light leading-relaxed">{feature.description}</p>
-                </div>
+                </AnimatedSection>
               )
             })}
           </div>
@@ -249,7 +249,7 @@ export default function Home() {
       {/* Featured Properties - Gallery Style */}
       <section className="py-32 bg-neutral-50">
         <div className="container-custom">
-          <div className="text-center mb-20">
+          <AnimatedSection animation="fade-up" className="text-center mb-20">
             <h2 className="text-4xl md:text-5xl font-display font-light text-neutral-900 mb-4">
               Featured Properties
             </h2>
@@ -257,11 +257,11 @@ export default function Home() {
             <p className="text-xl text-neutral-600 font-light max-w-2xl mx-auto">
               Discover our handpicked selection of premium properties
             </p>
-          </div>
+          </AnimatedSection>
 
           <div className="grid md:grid-cols-3 gap-8">
-            {featuredProperties.map((property) => (
-              <div key={property.id} className="group cursor-pointer">
+            {featuredProperties.map((property, index) => (
+              <AnimatedSection key={property.id} animation="scale" delay={index * 150} className="group cursor-pointer">
                 <div className="relative overflow-hidden bg-neutral-900 aspect-[4/5]">
                   <Image
                     src={property.image}
@@ -286,16 +286,16 @@ export default function Home() {
                     </div>
                   </div>
                 </div>
-              </div>
+              </AnimatedSection>
             ))}
           </div>
 
-          <div className="text-center mt-16">
+          <AnimatedSection animation="fade-up" className="text-center mt-16">
             <Link href="/properties" className="inline-flex items-center gap-3 text-neutral-900 font-medium tracking-wider uppercase text-sm hover:text-accent-gold transition-colors group">
               View All Properties 
               <FaArrowRight className="group-hover:translate-x-2 transition-transform" />
             </Link>
-          </div>
+          </AnimatedSection>
         </div>
       </section>
 
@@ -303,7 +303,7 @@ export default function Home() {
       <section className="py-32 bg-black text-white">
         <div className="container-custom">
           <div className="grid lg:grid-cols-2 gap-16 items-center">
-            <div className="relative h-[700px] order-2 lg:order-1">
+            <AnimatedSection animation="fade-right" className="relative h-[700px] order-2 lg:order-1">
               <Image
                 src="https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?ixlib=rb-4.0.3"
                 alt="Luxury Home Interior"
@@ -311,9 +311,9 @@ export default function Home() {
                 className="object-cover"
               />
               <div className="absolute inset-0 bg-gradient-to-r from-black/60 to-transparent"></div>
-            </div>
+            </AnimatedSection>
             
-            <div className="order-1 lg:order-2">
+            <AnimatedSection animation="fade-left" delay={200} className="order-1 lg:order-2">
               <h2 className="text-4xl md:text-5xl font-display font-light mb-8">
                 Complete Real Estate Solutions
               </h2>
@@ -342,7 +342,7 @@ export default function Home() {
                 Explore Services
                 <FaArrowRight className="group-hover:translate-x-2 transition-transform" />
               </Link>
-            </div>
+            </AnimatedSection>
           </div>
         </div>
       </section>
@@ -350,16 +350,16 @@ export default function Home() {
       {/* Testimonials - Clean Design */}
       <section className="py-32 bg-white">
         <div className="container-custom">
-          <div className="text-center mb-20">
+          <AnimatedSection animation="fade-up" className="text-center mb-20">
             <h2 className="text-4xl md:text-5xl font-display font-light text-neutral-900 mb-4">
               Client Testimonials
             </h2>
             <div className="h-px w-32 bg-accent-gold mx-auto my-8"></div>
-          </div>
+          </AnimatedSection>
 
           <div className="grid md:grid-cols-3 gap-12 max-w-6xl mx-auto">
-            {testimonials.map((testimonial) => (
-              <div key={testimonial.id} className="text-center">
+            {testimonials.map((testimonial, index) => (
+              <AnimatedSection key={testimonial.id} animation="fade-up" delay={index * 150} className="text-center">
                 <div className="mb-8">
                   <FaQuoteLeft className="text-3xl text-accent-gold/20 mx-auto" />
                 </div>
@@ -375,7 +375,7 @@ export default function Home() {
                   <p className="font-medium text-neutral-900">{testimonial.name}</p>
                   <p className="text-sm text-neutral-500">{testimonial.role}</p>
                 </div>
-              </div>
+              </AnimatedSection>
             ))}
           </div>
         </div>
@@ -383,7 +383,7 @@ export default function Home() {
 
       {/* CTA Section - Sophisticated */}
       <section className="py-32 bg-gradient-to-b from-neutral-900 to-black text-white">
-        <div className="container-custom text-center">
+        <AnimatedSection animation="fade-up" className="container-custom text-center">
           <h2 className="text-4xl md:text-5xl font-display font-light mb-8">
             Ready to Make Your Move?
           </h2>
@@ -393,10 +393,7 @@ export default function Home() {
           </p>
           
           <div className="flex flex-col md:flex-row gap-8 justify-center items-center">
-            <Link href="/contact" className="group relative px-10 py-4 bg-accent-gold text-black font-medium tracking-wider uppercase text-sm overflow-hidden transition-all duration-300">
-              <span className="relative z-10">Schedule Consultation</span>
-              <div className="absolute inset-0 bg-white transform -translate-y-full group-hover:translate-y-0 transition-transform duration-300"></div>
-            </Link>
+            <BookingWidget id="cta-booking" className="inline-block" />
             
             <div className="flex items-center gap-4 text-neutral-400">
               <span className="text-sm uppercase tracking-wider">or call directly</span>
@@ -405,7 +402,7 @@ export default function Home() {
               </a>
             </div>
           </div>
-        </div>
+        </AnimatedSection>
       </section>
     </>
   )

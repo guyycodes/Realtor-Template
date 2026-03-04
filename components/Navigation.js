@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { FaBars, FaTimes, FaPhone, FaEnvelope } from 'react-icons/fa'
+import { BookingWidget } from '@/hooks/useWidgetfied'
 
 const Navigation = () => {
   const [isOpen, setIsOpen] = useState(false)
@@ -71,9 +72,7 @@ const Navigation = () => {
                   <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-primary-600 transition-all group-hover:w-full"></span>
                 </Link>
               ))}
-              <Link href="/contact" className="btn-primary ml-4">
-                Get Started
-              </Link>
+              <BookingWidget id="nav-booking" className="ml-4" />
             </div>
 
             {/* Mobile Menu Button */}
@@ -102,13 +101,7 @@ const Navigation = () => {
                 {link.label}
               </Link>
             ))}
-            <Link 
-              href="/contact" 
-              onClick={() => setIsOpen(false)}
-              className="btn-primary inline-block mt-4"
-            >
-              Get Started
-            </Link>
+            <BookingWidget id="nav-mobile-booking" className="inline-block mt-4" />
           </div>
         </div>
       </nav>

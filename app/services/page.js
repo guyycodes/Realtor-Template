@@ -1,6 +1,8 @@
 import Link from 'next/link'
 import Image from 'next/image'
 import { FaHome, FaHandshake, FaChartLine, FaKey, FaMapMarkedAlt, FaPalette, FaUserTie, FaClipboardCheck, FaArrowRight, FaGem, FaGlobe, FaShieldAlt } from 'react-icons/fa'
+import { BookingWidget } from '@/hooks/useWidgetfied'
+import AnimatedSection from '@/components/AnimatedSection'
 
 export const metadata = {
   title: 'Luxury Real Estate Services - Sarah Thompson',
@@ -163,7 +165,7 @@ export default function Services() {
         </div>
         
         <div className="relative z-10 container-custom">
-          <div className="max-w-3xl">
+          <AnimatedSection animation="fade-up" threshold={0.05} className="max-w-3xl">
             <span className="inline-block text-accent-gold text-sm tracking-[0.3em] uppercase font-light mb-6">
               Bespoke Solutions
             </span>
@@ -175,14 +177,14 @@ export default function Services() {
               Elevating real estate to an art form. Experience service that anticipates your needs 
               and exceeds your expectations at every turn.
             </p>
-          </div>
+          </AnimatedSection>
         </div>
       </section>
 
       {/* Services Grid - Elegant Presentation */}
       <section className="py-32 bg-white">
         <div className="container-custom">
-          <div className="text-center mb-20">
+          <AnimatedSection animation="fade-up" className="text-center mb-20">
             <h2 className="text-4xl md:text-5xl font-display font-light text-neutral-900 mb-4">
               Tailored to Perfection
             </h2>
@@ -190,7 +192,7 @@ export default function Services() {
             <p className="text-xl text-neutral-600 font-light max-w-2xl mx-auto">
               Every service is customized to meet the unique requirements of our distinguished clientele
             </p>
-          </div>
+          </AnimatedSection>
 
           <div className="space-y-32">
             {services.map((service, index) => {
@@ -200,7 +202,7 @@ export default function Services() {
               return (
                 <div key={service.id} id={service.id} className="scroll-mt-24">
                   <div className={`grid lg:grid-cols-2 gap-16 items-center ${isEven ? '' : 'lg:flex-row-reverse'}`}>
-                    <div className={isEven ? '' : 'lg:order-2'}>
+                    <AnimatedSection animation={isEven ? 'fade-right' : 'fade-left'} className={isEven ? '' : 'lg:order-2'}>
                       <div className="flex items-center gap-4 mb-8">
                         <div className="w-16 h-16 border border-accent-gold/30 rounded-full flex items-center justify-center">
                           <Icon className="text-accent-gold text-2xl" />
@@ -221,13 +223,10 @@ export default function Services() {
                         ))}
                       </div>
                       
-                      <Link href="/contact" className="inline-flex items-center gap-3 text-black font-medium tracking-wider uppercase text-sm hover:text-accent-gold transition-colors group">
-                        Begin Your Journey
-                        <FaArrowRight className="group-hover:translate-x-2 transition-transform" />
-                      </Link>
-                    </div>
+                      <BookingWidget id={`service-booking-${service.id}`} className="inline-block" />
+                    </AnimatedSection>
                     
-                    <div className={`relative ${isEven ? '' : 'lg:order-1'}`}>
+                    <AnimatedSection animation={isEven ? 'fade-left' : 'fade-right'} delay={200} className={`relative ${isEven ? '' : 'lg:order-1'}`}>
                       <div className="relative h-[500px] overflow-hidden bg-neutral-900">
                         <Image
                           src={service.image}
@@ -239,7 +238,7 @@ export default function Services() {
                       </div>
                       {/* Decorative accent */}
                       <div className="absolute -bottom-6 -right-6 w-32 h-32 border border-accent-gold/20"></div>
-                    </div>
+                    </AnimatedSection>
                   </div>
                 </div>
               )
@@ -251,7 +250,7 @@ export default function Services() {
       {/* Process Section - Minimalist Timeline */}
       <section className="py-32 bg-black text-white">
         <div className="container-custom">
-          <div className="text-center mb-20">
+          <AnimatedSection animation="fade-up" className="text-center mb-20">
             <h2 className="text-4xl md:text-5xl font-display font-light mb-4">
               The Thompson Method
             </h2>
@@ -259,17 +258,17 @@ export default function Services() {
             <p className="text-xl text-neutral-400 font-light max-w-2xl mx-auto">
               A proven approach refined over 15 years of excellence in luxury real estate
             </p>
-          </div>
+          </AnimatedSection>
 
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-12">
-            {process.map((item) => (
-              <div key={item.step} className="relative">
+            {process.map((item, index) => (
+              <AnimatedSection key={item.step} animation="fade-up" delay={index * 100} className="relative">
                 <div className="border border-white/10 p-8 hover:border-accent-gold/30 transition-colors">
                   <div className="text-5xl font-light text-accent-gold/20 mb-4">{item.step}</div>
                   <h3 className="text-xl font-medium mb-3 tracking-wide">{item.title}</h3>
                   <p className="text-neutral-400 font-light">{item.description}</p>
                 </div>
-              </div>
+              </AnimatedSection>
             ))}
           </div>
         </div>
@@ -279,53 +278,52 @@ export default function Services() {
       <section className="py-32 bg-neutral-50">
         <div className="container-custom">
           <div className="max-w-4xl mx-auto text-center">
-            <h2 className="text-4xl md:text-5xl font-display font-light text-neutral-900 mb-4">
-              The Distinction of Excellence
-            </h2>
-            <div className="h-px w-32 bg-accent-gold mx-auto my-8"></div>
+            <AnimatedSection animation="fade-up">
+              <h2 className="text-4xl md:text-5xl font-display font-light text-neutral-900 mb-4">
+                The Distinction of Excellence
+              </h2>
+              <div className="h-px w-32 bg-accent-gold mx-auto my-8"></div>
+            </AnimatedSection>
             
             <div className="grid md:grid-cols-2 gap-12 mb-16 text-left">
-              <div>
+              <AnimatedSection animation="fade-up" delay={0}>
                 <h3 className="text-xl font-medium mb-3 tracking-wide">Unmatched Track Record</h3>
                 <p className="text-neutral-600 font-light leading-relaxed">
                   With over 500 successful transactions totaling $250M+ in sales, 
                   my proven expertise delivers exceptional results consistently.
                 </p>
-              </div>
-              <div>
+              </AnimatedSection>
+              <AnimatedSection animation="fade-up" delay={100}>
                 <h3 className="text-xl font-medium mb-3 tracking-wide">Global Network</h3>
                 <p className="text-neutral-600 font-light leading-relaxed">
                   Access to an exclusive network of international buyers, sellers, 
                   and industry professionals spanning six continents.
                 </p>
-              </div>
-              <div>
+              </AnimatedSection>
+              <AnimatedSection animation="fade-up" delay={200}>
                 <h3 className="text-xl font-medium mb-3 tracking-wide">Absolute Discretion</h3>
                 <p className="text-neutral-600 font-light leading-relaxed">
                   Complete confidentiality for high-profile clients, with proven 
                   protocols for maintaining privacy throughout every transaction.
                 </p>
-              </div>
-              <div>
+              </AnimatedSection>
+              <AnimatedSection animation="fade-up" delay={300}>
                 <h3 className="text-xl font-medium mb-3 tracking-wide">Strategic Excellence</h3>
                 <p className="text-neutral-600 font-light leading-relaxed">
                   Sophisticated negotiation tactics and market positioning strategies 
                   that consistently achieve optimal outcomes for clients.
                 </p>
-              </div>
+              </AnimatedSection>
             </div>
 
-            <Link href="/contact" className="group relative px-10 py-4 bg-black text-white font-medium tracking-wider uppercase text-sm overflow-hidden transition-all duration-300 inline-block">
-              <span className="relative z-10">Schedule Private Consultation</span>
-              <div className="absolute inset-0 bg-accent-gold transform -translate-x-full group-hover:translate-x-0 transition-transform duration-300"></div>
-            </Link>
+            <BookingWidget id="services-consultation-booking" className="inline-block" />
           </div>
         </div>
       </section>
 
       {/* CTA Section - Luxurious Invitation */}
       <section className="py-32 bg-gradient-to-b from-neutral-900 to-black">
-        <div className="container-custom text-center">
+        <AnimatedSection animation="fade-up" className="container-custom text-center">
           <h2 className="text-4xl md:text-5xl font-display font-light text-white mb-6">
             Experience Excellence
           </h2>
@@ -333,15 +331,13 @@ export default function Services() {
           <p className="text-xl text-neutral-300 font-light mb-12 max-w-2xl mx-auto">
             Discover how personalized service and unparalleled expertise can transform your real estate experience.
           </p>
-          <div className="flex flex-col sm:flex-row gap-6 justify-center">
-            <Link href="/contact" className="px-10 py-4 bg-accent-gold text-black font-medium tracking-wider uppercase text-sm hover:bg-white transition-colors">
-              Begin Consultation
-            </Link>
+          <div className="flex flex-col sm:flex-row gap-6 justify-center items-center">
+            <BookingWidget id="services-cta-booking" className="inline-block" />
             <a href="tel:+1234567890" className="px-10 py-4 border border-white/30 text-white font-medium tracking-wider uppercase text-sm hover:bg-white hover:text-black transition-all duration-300">
               Direct Line: (123) 456-7890
             </a>
           </div>
-        </div>
+        </AnimatedSection>
       </section>
     </>
   )

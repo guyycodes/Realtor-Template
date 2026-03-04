@@ -1,5 +1,8 @@
+'use client'
+
 import Link from 'next/link'
 import { FaFacebookF, FaTwitter, FaInstagram, FaLinkedinIn, FaYoutube, FaPhone, FaEnvelope, FaMapMarkerAlt } from 'react-icons/fa'
+import { JobPortalWidget, RouterWidget } from '@/hooks/useWidgetfied'
 
 const Footer = () => {
   const currentYear = new Date().getFullYear()
@@ -135,6 +138,14 @@ const Footer = () => {
                 </li>
               ))}
             </ul>
+          </div>
+        </div>
+
+        {/* Widgetfied Widgets */}
+        <div className="border-t border-neutral-800 pt-8 mb-8">
+          <div className="flex flex-col sm:flex-row justify-center items-center gap-6">
+            <JobPortalWidget id="footer-portal" className="inline-block" />
+            <RouterWidget id="footer-router" className="inline-block" />
           </div>
         </div>
 

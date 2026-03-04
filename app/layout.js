@@ -48,6 +48,11 @@ export const metadata = {
 export default function RootLayout({ children }) {
   return (
     <html lang="en">
+      <head>
+        <link rel="preload" href="https://cdn.widgetfied.com/portal.js" as="script" crossOrigin="anonymous" />
+        <link rel="dns-prefetch" href="https://cdn.widgetfied.com" />
+        <link rel="dns-prefetch" href="https://www.widgetfied.com" />
+      </head>
       <body className="antialiased">
         <Navigation />
         <main className="min-h-screen">

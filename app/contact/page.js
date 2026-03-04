@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import Image from 'next/image'
 import { FaPhone, FaEnvelope, FaMapMarkerAlt, FaClock, FaFacebookF, FaTwitter, FaInstagram, FaLinkedinIn, FaPaperPlane } from 'react-icons/fa'
+import AnimatedSection from '@/components/AnimatedSection'
 
 export default function Contact() {
   const [formData, setFormData] = useState({
@@ -99,7 +100,7 @@ export default function Contact() {
         </div>
         
         <div className="relative z-10 container-custom">
-          <div className="max-w-3xl">
+          <AnimatedSection animation="fade-up" threshold={0.05} className="max-w-3xl">
             <span className="inline-block text-accent-gold text-sm tracking-[0.3em] uppercase font-light mb-6">
               Private Consultation
             </span>
@@ -111,7 +112,7 @@ export default function Contact() {
               Begin your luxury real estate journey with a confidential consultation. 
               I'm here to understand your vision and exceed your expectations.
             </p>
-          </div>
+          </AnimatedSection>
         </div>
       </section>
 
@@ -120,7 +121,7 @@ export default function Contact() {
         <div className="container-custom">
           <div className="grid lg:grid-cols-3 gap-16">
             {/* Contact Form - Elegant Design */}
-            <div className="lg:col-span-2">
+            <AnimatedSection animation="fade-right" className="lg:col-span-2">
               <div className="bg-white border border-neutral-200 p-12">
                 <h2 className="text-3xl font-display font-light text-neutral-900 mb-2">
                   Schedule Your Consultation
@@ -306,10 +307,10 @@ export default function Contact() {
                   </button>
                 </form>
               </div>
-            </div>
+            </AnimatedSection>
 
             {/* Contact Info Sidebar - Luxury Style */}
-            <div className="space-y-10">
+            <AnimatedSection animation="fade-left" delay={200} className="space-y-10">
               {/* Contact Details */}
               <div className="border border-neutral-200 p-8">
                 <h3 className="text-2xl font-display font-light text-neutral-900 mb-2">Direct Contact</h3>
@@ -377,7 +378,7 @@ export default function Contact() {
                   and am available for urgent matters at your convenience.
                 </p>
               </div>
-            </div>
+            </AnimatedSection>
           </div>
         </div>
       </section>
@@ -392,18 +393,18 @@ export default function Contact() {
         />
         <div className="absolute inset-0 bg-gradient-to-t from-black via-black/50 to-transparent"></div>
         <div className="absolute inset-0 flex items-center justify-center">
-          <div className="text-center text-white">
+          <AnimatedSection animation="fade-in" className="text-center text-white">
             <FaMapMarkerAlt className="text-accent-gold text-4xl mb-6 mx-auto" />
             <h3 className="text-3xl font-display font-light mb-4">Beverly Hills Office</h3>
             <p className="text-lg font-light mb-2">9701 Wilshire Boulevard, Suite 1000</p>
             <p className="text-lg font-light">Beverly Hills, California 90212</p>
-          </div>
+          </AnimatedSection>
         </div>
       </section>
 
       {/* CTA Section - Elegant Invitation */}
       <section className="py-24 bg-gradient-to-b from-neutral-900 to-black">
-        <div className="container-custom text-center">
+        <AnimatedSection animation="fade-up" className="container-custom text-center">
           <h2 className="text-3xl md:text-4xl font-display font-light text-white mb-6">
             Your Luxury Real Estate Journey Awaits
           </h2>
@@ -414,7 +415,7 @@ export default function Contact() {
           <a href="tel:+1234567890" className="inline-flex items-center gap-3 text-accent-gold font-medium tracking-wider uppercase text-sm hover:text-white transition-colors">
             Call Direct: (123) 456-7890
           </a>
-        </div>
+        </AnimatedSection>
       </section>
     </>
   )

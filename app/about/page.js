@@ -1,6 +1,8 @@
 import Image from 'next/image'
 import Link from 'next/link'
 import { FaLinkedinIn, FaTwitter, FaInstagram, FaFacebookF, FaPhone, FaEnvelope, FaAward, FaTrophy, FaHandshake, FaUsers, FaStar, FaCheck, FaQuoteLeft, FaArrowRight } from 'react-icons/fa'
+import { BookingWidget } from '@/hooks/useWidgetfied'
+import AnimatedSection from '@/components/AnimatedSection'
 
 export const metadata = {
   title: 'About Sarah Thompson - Elite Luxury Real Estate Agent',
@@ -68,7 +70,7 @@ export default function About() {
         </div>
         
         <div className="relative z-10 container-custom">
-          <div className="max-w-4xl">
+          <AnimatedSection animation="fade-up" threshold={0.05} className="max-w-4xl">
             <span className="inline-block text-accent-gold text-sm tracking-[0.3em] uppercase font-light mb-6">
               Distinguished Service Since 2009
             </span>
@@ -80,7 +82,7 @@ export default function About() {
               Southern California's premier luxury real estate advisor, combining unparalleled market expertise 
               with a commitment to exceptional client experiences.
             </p>
-          </div>
+          </AnimatedSection>
         </div>
       </section>
 
@@ -88,7 +90,7 @@ export default function About() {
       <section className="py-32 bg-white">
         <div className="container-custom">
           <div className="grid lg:grid-cols-2 gap-16 items-center">
-            <div className="relative">
+            <AnimatedSection animation="fade-right" className="relative">
               <div className="relative">
                 {/* Decorative frames */}
                 <div className="absolute -inset-4 border border-accent-gold/20"></div>
@@ -111,9 +113,9 @@ export default function About() {
                   <p className="text-white text-sm font-light">Top 1% Nationwide</p>
                 </div>
               </div>
-            </div>
+            </AnimatedSection>
             
-            <div>
+            <AnimatedSection animation="fade-left" delay={200}>
               <h2 className="text-4xl font-display font-light text-neutral-900 mb-8">
                 A Legacy of Excellence
               </h2>
@@ -163,7 +165,7 @@ export default function About() {
                   </a>
                 ))}
               </div>
-            </div>
+            </AnimatedSection>
           </div>
         </div>
       </section>
@@ -173,10 +175,10 @@ export default function About() {
         <div className="container-custom">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-12 text-center">
             {achievements.map((stat, index) => (
-              <div key={index}>
+              <AnimatedSection key={index} animation="fade-up" delay={index * 100}>
                 <div className="text-3xl md:text-4xl font-light text-accent-gold mb-3">{stat.value}</div>
                 <div className="text-xs uppercase tracking-wider text-neutral-500">{stat.label}</div>
-              </div>
+              </AnimatedSection>
             ))}
           </div>
         </div>
@@ -186,7 +188,7 @@ export default function About() {
       <section className="py-32 bg-neutral-50">
         <div className="container-custom">
           <div className="max-w-4xl mx-auto">
-            <div className="text-center mb-20">
+            <AnimatedSection animation="fade-up" className="text-center mb-20">
               <h2 className="text-4xl md:text-5xl font-display font-light text-neutral-900 mb-4">
                 Areas of Expertise
               </h2>
@@ -194,14 +196,14 @@ export default function About() {
               <p className="text-xl text-neutral-600 font-light">
                 Comprehensive luxury real estate services tailored to discerning clients
               </p>
-            </div>
+            </AnimatedSection>
             
             <div className="grid md:grid-cols-2 gap-6">
               {expertise.map((service, index) => (
-                <div key={index} className="flex items-center gap-4 p-6 bg-white border border-neutral-200 hover:border-accent-gold/30 transition-colors">
+                <AnimatedSection key={index} animation="fade-up" delay={index * 75} className="flex items-center gap-4 p-6 bg-white border border-neutral-200 hover:border-accent-gold/30 transition-colors">
                   <div className="w-px h-4 bg-accent-gold"></div>
                   <span className="text-neutral-700 font-light">{service}</span>
-                </div>
+                </AnimatedSection>
               ))}
             </div>
           </div>
@@ -212,7 +214,7 @@ export default function About() {
       <section className="py-32 bg-white">
         <div className="container-custom">
           <div className="max-w-4xl mx-auto">
-            <div className="text-center mb-20">
+            <AnimatedSection animation="fade-up" className="text-center mb-20">
               <h2 className="text-4xl md:text-5xl font-display font-light text-neutral-900 mb-4">
                 My Philosophy
               </h2>
@@ -220,10 +222,10 @@ export default function About() {
               <p className="text-xl text-neutral-600 font-light">
                 Excellence in every detail, discretion in every transaction
               </p>
-            </div>
+            </AnimatedSection>
 
             <div className="grid md:grid-cols-3 gap-12">
-              <div className="text-center">
+              <AnimatedSection animation="fade-up" delay={0} className="text-center">
                 <div className="w-24 h-24 mx-auto mb-6 border border-neutral-200 rounded-full flex items-center justify-center">
                   <FaUsers className="text-accent-gold text-2xl" />
                 </div>
@@ -231,9 +233,9 @@ export default function About() {
                 <p className="text-neutral-600 font-light leading-relaxed">
                   Your aspirations drive every decision. I provide white-glove service tailored to your unique requirements.
                 </p>
-              </div>
+              </AnimatedSection>
               
-              <div className="text-center">
+              <AnimatedSection animation="fade-up" delay={150} className="text-center">
                 <div className="w-24 h-24 mx-auto mb-6 border border-neutral-200 rounded-full flex items-center justify-center">
                   <FaHandshake className="text-accent-gold text-2xl" />
                 </div>
@@ -241,9 +243,9 @@ export default function About() {
                 <p className="text-neutral-600 font-light leading-relaxed">
                   Trust is paramount. Every interaction is guided by transparency, honesty, and professional ethics.
                 </p>
-              </div>
+              </AnimatedSection>
               
-              <div className="text-center">
+              <AnimatedSection animation="fade-up" delay={300} className="text-center">
                 <div className="w-24 h-24 mx-auto mb-6 border border-neutral-200 rounded-full flex items-center justify-center">
                   <FaTrophy className="text-accent-gold text-2xl" />
                 </div>
@@ -251,7 +253,7 @@ export default function About() {
                 <p className="text-neutral-600 font-light leading-relaxed">
                   Results speak volumes. My track record demonstrates consistent success in the most competitive markets.
                 </p>
-              </div>
+              </AnimatedSection>
             </div>
           </div>
         </div>
@@ -261,7 +263,7 @@ export default function About() {
       <section className="py-32 bg-black text-white">
         <div className="container-custom">
           <div className="max-w-5xl mx-auto">
-            <div className="text-center mb-20">
+            <AnimatedSection animation="fade-up" className="text-center mb-20">
               <h2 className="text-4xl md:text-5xl font-display font-light mb-4">
                 Awards & Accolades
               </h2>
@@ -269,18 +271,18 @@ export default function About() {
               <p className="text-xl text-neutral-400 font-light">
                 Recognition from the industry's most prestigious organizations
               </p>
-            </div>
+            </AnimatedSection>
             
             <div className="grid md:grid-cols-2 gap-8">
               {awards.map((award, index) => (
-                <div key={index} className="flex items-start gap-6 p-8 border border-white/10 hover:border-accent-gold/30 transition-colors">
+                <AnimatedSection key={index} animation="fade-up" delay={index * 100} className="flex items-start gap-6 p-8 border border-white/10 hover:border-accent-gold/30 transition-colors">
                   <FaTrophy className="text-accent-gold text-2xl flex-shrink-0 mt-1" />
                   <div>
                     <h3 className="font-medium text-lg mb-1">{award.title}</h3>
                     <p className="text-accent-gold text-sm font-light mb-1">{award.org}</p>
                     <p className="text-neutral-500 text-sm">{award.year}</p>
                   </div>
-                </div>
+                </AnimatedSection>
               ))}
             </div>
           </div>
@@ -291,7 +293,7 @@ export default function About() {
       <section className="py-32 bg-white">
         <div className="container-custom">
           <div className="max-w-5xl mx-auto">
-            <div className="text-center mb-20">
+            <AnimatedSection animation="fade-up" className="text-center mb-20">
               <h2 className="text-4xl md:text-5xl font-display font-light text-neutral-900 mb-4">
                 Client Testimonials
               </h2>
@@ -299,11 +301,11 @@ export default function About() {
               <p className="text-xl text-neutral-600 font-light">
                 The true measure of success is client satisfaction
               </p>
-            </div>
+            </AnimatedSection>
 
             <div className="space-y-12">
               {testimonials.map((testimonial, index) => (
-                <div key={index} className="relative">
+                <AnimatedSection key={index} animation="fade-up" delay={index * 150} className="relative">
                   <FaQuoteLeft className="text-accent-gold/10 text-4xl absolute -top-2 -left-2" />
                   <div className="pl-12">
                     <p className="text-xl text-neutral-700 font-light italic mb-6 leading-relaxed">
@@ -319,7 +321,7 @@ export default function About() {
                       <p className="text-sm text-neutral-500 font-light">{testimonial.role}</p>
                     </div>
                   </div>
-                </div>
+                </AnimatedSection>
               ))}
             </div>
           </div>
@@ -328,7 +330,7 @@ export default function About() {
 
       {/* CTA Section - Luxurious Invitation */}
       <section className="py-32 bg-gradient-to-b from-neutral-900 to-black text-white">
-        <div className="container-custom text-center">
+        <AnimatedSection animation="fade-up" className="container-custom text-center">
           <h2 className="text-4xl md:text-5xl font-display font-light mb-8">
             Begin Your Luxury Real Estate Journey
           </h2>
@@ -336,16 +338,13 @@ export default function About() {
           <p className="text-xl text-neutral-300 font-light mb-12 max-w-2xl mx-auto">
             Experience the difference of working with Southern California's most distinguished real estate professional.
           </p>
-          <div className="flex flex-col sm:flex-row gap-6 justify-center">
-            <Link href="/contact" className="group relative px-10 py-4 bg-accent-gold text-black font-medium tracking-wider uppercase text-sm overflow-hidden transition-all duration-300">
-              <span className="relative z-10">Schedule Private Consultation</span>
-              <div className="absolute inset-0 bg-white transform -translate-y-full group-hover:translate-y-0 transition-transform duration-300"></div>
-            </Link>
+          <div className="flex flex-col sm:flex-row gap-6 justify-center items-center">
+            <BookingWidget id="about-cta-booking" className="inline-block" />
             <a href="tel:+1234567890" className="px-10 py-4 border border-white/30 text-white font-medium tracking-wider uppercase text-sm hover:bg-white hover:text-black transition-all duration-300">
               Direct: (123) 456-7890
             </a>
           </div>
-        </div>
+        </AnimatedSection>
       </section>
     </>
   )
