@@ -84,7 +84,7 @@ const properties = [
   },
   {
     id: 8,
-    image: 'https://images.unsplash.com/photo-1600607687644-aac4c3eac7f4?q=80&w=2071',
+    image: 'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?q=80&w=2071',
     price: '$18,700,000',
     location: 'Brentwood',
     type: 'Premier Estate',

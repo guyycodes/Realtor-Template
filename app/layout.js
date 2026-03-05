@@ -3,6 +3,7 @@ import Navigation from '@/components/Navigation'
 import Footer from '@/components/Footer'
 
 export const metadata = {
+  metadataBase: new URL('https://sarahthompsonrealty.com'),
   title: 'Sarah Thompson - Luxury Real Estate Agent | Your Dream Home Awaits',
   description: 'Southern California\'s premier luxury real estate agent. Find your perfect home with personalized service, exclusive listings, and expert market knowledge.',
   keywords: 'luxury real estate, realtor, homes for sale, property listings, buying homes, selling homes, Southern California real estate',
