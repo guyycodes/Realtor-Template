@@ -1,27 +1,11 @@
 'use client'
 
-import { useState, useEffect } from 'react'
 import { FaPhone } from 'react-icons/fa'
 import { BookingWidget } from '@/hooks/useWidgetfied'
 
 export default function StickyMobileCTA() {
-  const [visible, setVisible] = useState(false)
-
-  useEffect(() => {
-    const handleScroll = () => {
-      setVisible(window.scrollY > 300)
-    }
-    window.addEventListener('scroll', handleScroll, { passive: true })
-    handleScroll()
-    return () => window.removeEventListener('scroll', handleScroll)
-  }, [])
-
   return (
-    <div
-      className={`fixed bottom-0 left-0 right-0 z-50 lg:hidden transition-transform duration-300 ${
-        visible ? 'translate-y-0' : 'translate-y-full'
-      }`}
-    >
+    <div className="fixed bottom-0 left-0 right-0 z-50 lg:hidden">
       <div className="bg-black/95 backdrop-blur-lg border-t border-accent-gold/20 px-4 py-3 safe-area-bottom">
         <div className="flex gap-3 max-w-lg mx-auto items-center">
           <a
