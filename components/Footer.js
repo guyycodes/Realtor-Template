@@ -1,7 +1,7 @@
 'use client'
 
 import Link from 'next/link'
-import { FaFacebookF, FaTwitter, FaInstagram, FaLinkedinIn, FaYoutube, FaPhone, FaEnvelope, FaMapMarkerAlt } from 'react-icons/fa'
+import { FaFacebookF, FaTwitter, FaInstagram, FaLinkedinIn, FaYoutube, FaPhone, FaEnvelope, FaMapMarkerAlt, FaShieldAlt } from 'react-icons/fa'
 import { JobPortalWidget, RouterWidget } from '@/hooks/useWidgetfied'
 
 const Footer = () => {
@@ -183,6 +183,9 @@ const Footer = () => {
               </Link>
               <Link href="/sitemap" className="hover:text-white transition-colors">
                 Sitemap
+              </Link>
+              <Link href="/admin" className="flex items-center gap-1 text-neutral-600 hover:text-neutral-400 transition-colors">
+                <FaShieldAlt className="w-3 h-3" /> Admin
               </Link>
             </div>
           </div>

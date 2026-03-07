@@ -143,3 +143,14 @@
   opacity: 1;
   transform: scale(1);
 }
+
+/* Sticky mobile CTA safe area + footer spacing */
+.safe-area-bottom {
+  padding-bottom: max(0.75rem, env(safe-area-inset-bottom));
+}
+
+@media (max-width: 1023px) {
+  footer {
+    padding-bottom: 5rem;
+  }
+}

@@ -4,6 +4,7 @@ import { FaHome, FaHandshake, FaChartLine, FaUsers, FaStar, FaQuoteLeft, FaArrow
 import PropertyCard from '@/components/PropertyCard'
 import TestimonialCard from '@/components/TestimonialCard'
 import ResponsiveQuantumSection from '@/components/ResponsiveQuantumSection'
+import TrustBadges from '@/components/TrustBadges'
 import { BookingWidget } from '@/hooks/useWidgetfied'
 import AnimatedSection from '@/components/AnimatedSection'
 
@@ -212,6 +213,9 @@ export default function Home() {
           <div className="w-px h-12 bg-gradient-to-b from-white/50 to-transparent mx-auto"></div>
         </div>
       </section>
+
+      {/* Trust Badges */}
+      <TrustBadges />
 
       {/* Quantum Immersive Property Experience Section */}
       <ResponsiveQuantumSection />

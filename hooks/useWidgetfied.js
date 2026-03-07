@@ -153,3 +153,19 @@ export function RouterWidget({ className = '', displayMode = 'button', id = 'rou
     />
   )
 }
+
+export function DataMinerWidget({ className = '', displayMode = 'button', id = 'lead-miner-widget', ...rest }) {
+  useWidgetInit(id)
+
+  return (
+    <div
+      id={id}
+      data-widget="leadMiner"
+      data-tenant={TENANT_ID}
+      data-container={id}
+      data-display-mode={displayMode}
+      className={className}
+      {...rest}
+    />
+  )
+}

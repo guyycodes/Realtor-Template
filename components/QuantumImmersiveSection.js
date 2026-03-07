@@ -139,8 +139,9 @@ class FibonacciSphere {
 // Normalize a 3D vector to unit length (length = 1)
 function normalize(v) {
   const length = Math.sqrt(v[0] * v[0] + v[1] * v[1] + v[2] * v[2])
-  if (length < 0.000001) return [0, 0, 0]  // Avoid division by zero
-  return [v[0] / length, v[1] / length, v[2] / length]
+  if (length < 0.000001) return [0, 0, 0]
+  const inv = 1 / length
+  return [v[0] * inv, v[1] * inv, v[2] * inv]
 }
 
 // Calculate dot product of two 3D vectors (measures similarity/alignment)
@@ -208,10 +209,9 @@ function slerp(q1, q2, t) {
 }
 
 // Rotate a 3D point using quaternion rotation
-// This is the core function that actually moves our property cards in 3D space
 function rotatePointByQuat(p, q) {
-  const [px, py, pz] = p  // Original point position
-  const [qx, qy, qz, qw] = q  // Quaternion components
+  const px = p[0], py = p[1], pz = p[2]
+  const qx = q[0], qy = q[1], qz = q[2], qw = q[3]
 
   const uvx = qy * pz - qz * py
   const uvy = qz * px - qx * pz
@@ -229,6 +229,16 @@ function rotatePointByQuat(p, q) {
   ]
 }
 
+// Multiply two quaternions: returns q1 * q2 (applies q2 first, then q1)
+function quatMultiply(a, b) {
+  return [
+    a[3] * b[0] + a[0] * b[3] + a[1] * b[2] - a[2] * b[1],
+    a[3] * b[1] - a[0] * b[2] + a[1] * b[3] + a[2] * b[0],
+    a[3] * b[2] + a[0] * b[1] - a[1] * b[0] + a[2] * b[3],
+    a[3] * b[3] - a[0] * b[0] - a[1] * b[1] - a[2] * b[2]
+  ]
+}
+
 // -------------------------
 // QuantumPropertyCloud Class
 // -------------------------
@@ -236,178 +246,149 @@ function rotatePointByQuat(p, q) {
 // Handles rotation, positioning, and animation of all cards.
 class QuantumPropertyCloud {
   constructor(root, propsData, sphereScale = 1, frontScale = 1.5, frontXOffset = 0, frontYOffset = 0) {
-    this.root = root  // Container DOM element
-    this.propsData = propsData  // Array of property data
-    this.sphereScale = sphereScale  // Scale factor for sphere size
-    this.frontScale = frontScale  // Scale factor for focused item
-    this.frontXOffset = frontXOffset  // X offset for focused item on smaller screens
-    this.frontYOffset = frontYOffset  // Y offset for focused item on smaller screens
+    this.root = root
+    this.propsData = propsData
+    this.sphereScale = sphereScale
+    this.frontScale = frontScale
+    this.frontXOffset = frontXOffset
+    this.frontYOffset = frontYOffset
 
-    this.N = propsData.length  // Number of properties
-    this.sphere = new FibonacciSphere(this.N)  // Generate 3D positions
+    this.N = propsData.length
+    this.sphere = new FibonacciSphere(this.N)
 
-    // Rotation state for bringing items to front
-    this.currentQuat = [0, 0, 0, 1]  // Current rotation (identity quaternion = no rotation)
-    this.targetQuat = [0, 0, 0, 1]   // Target rotation when focusing an item
-    this.rotationProgress = 1.0      // 0-1, controls interpolation between current and target
+    this.currentQuat = [0, 0, 0, 1]
+    this.targetQuat = [0, 0, 0, 1]
+    this.rotationProgress = 1.0
 
-    // Continuous ambient rotation (makes unfocused items orbit)
-    this.ambientRotation = 0  // Accumulated rotation angle in radians
-    this.frameId = null  // Animation frame ID for cleanup
+    this.ambientRotation = 0
+    this.frameId = null
 
-    // DOM elements
     this.elements = Array.from(root.querySelectorAll('.q-prop-item'))
-
-    // Keep track of which item is selected/focused
     this.focusedIndex = 0
+    this._prevFocusedIndex = -1
+
+    // Cache container dimensions to avoid layout reflows every frame
+    this._w = root.offsetWidth
+    this._h = root.offsetHeight
+    this._resizeObserver = new ResizeObserver(entries => {
+      const cr = entries[0].contentRect
+      this._w = cr.width
+      this._h = cr.height
+    })
+    this._resizeObserver.observe(root)
 
     this.updatePositions()
     this.start()
   }
 
-  // Rotate the sphere to bring a specific property card to the front/center
   focusOnIndex(index) {
-    if (index < 0 || index >= this.N) return  // Bounds check
+    if (index < 0 || index >= this.N) return
 
-    this.focusedIndex = index  // Update which item is focused
+    this.focusedIndex = index
 
-    // We want to rotate the selected point to face forward (z=1)
-    const front = [0, 0, 1]  // Forward-facing direction
-    const p = this.sphere.points[index]  // Current position of selected item
-    const pn = normalize(p)  // Normalize to unit vector
+    const front = [0, 0, 1]
+    const p = this.sphere.points[index]
+    const pn = normalize(p)
 
-    // Calculate angle between current position and front
-    let cosA = dot(pn, front)  // Cosine of angle via dot product
-    if (cosA > 1) cosA = 1  // Clamp to valid range
+    let cosA = dot(pn, front)
+    if (cosA > 1) cosA = 1
     if (cosA < -1) cosA = -1
-    const angle = Math.acos(cosA)  // Get actual angle in radians
+    const angle = Math.acos(cosA)
 
-    if (angle < 0.0001) return  // Already facing front, no rotation needed
+    if (angle < 0.0001) return
 
-    // Find rotation axis (perpendicular to both vectors)
     let axis = cross(pn, front)
     axis = normalize(axis)
 
-    // Create quaternion for this rotation
-    const focusQuat = axisAngleToQuat(axis, angle)
-    this.targetQuat = focusQuat  // Set as target
-    this.rotationProgress = 0  // Start interpolation from beginning
+    this.targetQuat = axisAngleToQuat(axis, angle)
+    this.rotationProgress = 0
   }
 
-  // Update 3D positions of all property cards each frame
   updatePositions() {
-    // Smooth interpolation when bringing item to front
+    // Only run slerp when actually transitioning
     if (this.rotationProgress < 1) {
-      const t = this.rotationProgress  // Linear progress 0-1
-      const easedT = 1 - Math.pow(1 - t, 3) // Cubic easing for smooth motion
-      const newQ = slerp(this.currentQuat, this.targetQuat, easedT)  // Interpolate rotation
-      this.currentQuat = newQ  // Update current rotation
+      const easedT = 1 - Math.pow(1 - this.rotationProgress, 3)
+      this.currentQuat = slerp(this.currentQuat, this.targetQuat, easedT)
     }
 
-    // Ambient rotation for continuous orbital motion
-    // Only applies to non-focused items (creates the orbiting effect)
-    this.ambientRotation += 0.00105  // Increment by ~0.06 degrees per frame (5% faster than original)
-    const ambientQuat = axisAngleToQuat([0, 1, 0], this.ambientRotation)  // Rotate around Y-axis
+    this.ambientRotation += 0.00105
+    const ambientQuat = axisAngleToQuat([0, 1, 0], this.ambientRotation)
+
+    // Pre-compose currentQuat * ambientQuat so orbiting items need only one rotation
+    const orbitQuat = quatMultiply(ambientQuat, this.currentQuat)
+
+    // Cache dimensions and derived constants outside the loop
+    const w = this._w
+    const h = this._h
+    const wScale = w / 3.5
+    const hScale = h / 3.5
+    const halfW = w * 0.5
+    const halfH = h * 0.5 - 80
+    const ss = this.sphereScale
+    const focusedIndex = this.focusedIndex
+    const focusChanged = focusedIndex !== this._prevFocusedIndex
 
     const N = this.N
     for (let i = 0; i < N; i++) {
       const el = this.elements[i]
       if (!el) continue
 
-      // FOCUSED ITEM: Pin to front/center with larger scale
-      if (i === this.focusedIndex) {
-        // Get original sphere position
-        const [x, y, z] = this.sphere.points[i]
-        
-        // Apply main rotation (brings item to front)
-        let rotated = rotatePointByQuat([x, y, z], this.currentQuat)
-        
-        // NOTE: We intentionally skip ambient rotation here!
-        // This keeps the focused item stationary while others orbit
-        
-        // Scale the position
-        const rx = rotated[0] * this.sphereScale
-        const ry = rotated[1] * this.sphereScale
-        const rz = rotated[2] * this.sphereScale
+      const pt = this.sphere.points[i]
 
-        // Perspective calculation (objects further away appear smaller)
-        const depth = 6  // Perspective depth factor
-        const perspective = depth / (depth - (rz * 3.5))  // Stronger perspective effect
+      if (i === focusedIndex) {
+        const rotated = rotatePointByQuat(pt, this.currentQuat)
 
-        // Convert 3D position to 2D screen coordinates
-        const translateX = rx * perspective * (this.root.offsetWidth / 3.5)
-        const translateY = ry * perspective * (this.root.offsetHeight / 3.5)
+        const rx = rotated[0] * ss
+        const ry = rotated[1] * ss
+        const rz = rotated[2] * ss
 
-        // Center point of container (slightly raised) with X offset for smaller screens
-        const centerX = this.root.offsetWidth / 2 + this.frontXOffset
-        const centerY = this.root.offsetHeight / 2 - 80 + this.frontYOffset  // Offset up by 80px
+        const perspective = 6 / (6 - rz * 3.5)
 
-        // Focused item gets larger scale
-        const scale = this.frontScale
-        el.style.transform = `
-          translate(${centerX + translateX}px, ${centerY + translateY}px)
-          scale(${scale})
-        `
-        el.style.zIndex = 9999
-        el.style.opacity = 1
+        const tx = halfW + this.frontXOffset + rx * perspective * wScale
+        const ty = halfH + this.frontYOffset + ry * perspective * hScale
+
+        el.style.transform = `translate(${tx}px,${ty}px) scale(${this.frontScale})`
+        el.style.zIndex = '9999'
+        el.style.opacity = '1'
         el.style.filter = 'none'
-        el.classList.add('quantum-front')
+        if (focusChanged) el.classList.add('quantum-front')
       } else {
-        // ORBITING ITEMS: Continue rotating around the sphere
-        const [x, y, z] = this.sphere.points[i]
-        
-        // Apply main rotation (for when transitioning)
-        let rotated = rotatePointByQuat([x, y, z], this.currentQuat)
-        
-        // ALSO apply ambient rotation (creates the orbit effect)
-        rotated = rotatePointByQuat(rotated, ambientQuat)
+        // Single rotation using pre-composed quaternion
+        const rotated = rotatePointByQuat(pt, orbitQuat)
 
-        const rx = rotated[0] * this.sphereScale
-        const ry = rotated[1] * this.sphereScale
-        const rz = rotated[2] * this.sphereScale
+        const rx = rotated[0] * ss
+        const ry = rotated[1] * ss
+        const rz = rotated[2] * ss
 
-        // Same perspective calculation as focused item
-        const depth = 6
-        const perspective = depth / (depth - (rz * 3.5))
-        const translateX = rx * perspective * (this.root.offsetWidth / 3.5)
-        const translateY = ry * perspective * (this.root.offsetHeight / 3.5)
+        const perspective = 6 / (6 - rz * 3.5)
 
-        const centerX = this.root.offsetWidth / 2
-        const centerY = this.root.offsetHeight / 2 - 80
+        const tx = halfW + rx * perspective * wScale
+        const ty = halfH + ry * perspective * hScale
 
-        // Scale based on depth (items in back are smaller)
-        const depthFactor = (rz + 1) / 2  // Convert z from [-1,1] to [0,1]
-        const baseScale = 0.2 + depthFactor * 0.6  // Scale range: 0.2 to 0.8
-        const scale = baseScale * perspective * 0.7  // Final scale with perspective
+        const depthFactor = (rz + 1) * 0.5
+        const scale = (0.2 + depthFactor * 0.6) * perspective * 0.7
 
-        el.style.transform = `
-          translate(${centerX + translateX}px, ${centerY + translateY}px)
-          scale(${scale})
-          rotateY(${rz * 15}deg)
-          translateZ(${rz * 200}px)
-        `
-        // Depth-based styling
-        el.style.zIndex = Math.floor((rz + 2) * 1000)  // Items in front have higher z-index
-        el.style.opacity = Math.max(0.15, 1 - Math.abs(rz) * 0.6)  // Fade items in back
-        el.style.filter = rz < -0.5 ? `blur(${Math.abs(rz + 0.5) * 2}px)` : 'none'  // Blur distant items
-        el.classList.remove('quantum-front')
+        el.style.transform = `translate(${tx}px,${ty}px) scale(${scale}) rotateY(${rz * 15}deg) translateZ(${rz * 200}px)`
+        el.style.zIndex = String((rz + 2) * 1000 | 0)
+        const absRz = rz < 0 ? -rz : rz
+        el.style.opacity = String(1 - absRz * 0.6 < 0.15 ? 0.15 : 1 - absRz * 0.6)
+        el.style.filter = rz < -0.5 ? `blur(${(-rz - 0.5) * 2}px)` : 'none'
+        if (focusChanged) el.classList.remove('quantum-front')
       }
     }
+
+    this._prevFocusedIndex = focusedIndex
   }
 
-  // Start the animation loop
   start() {
     const animate = () => {
-      // Progress the rotation interpolation
       if (this.rotationProgress < 1) {
-        this.rotationProgress += 0.05  // RETURN TO ORBIT SPEED: 5% per frame (doubled from original 0.025)
-        if (this.rotationProgress > 1) {
-          this.rotationProgress = 1  // Clamp to 1
-        }
+        this.rotationProgress += 0.05
+        if (this.rotationProgress > 1) this.rotationProgress = 1
       }
-      
-      this.updatePositions()  // Update all card positions
-      this.frameId = requestAnimationFrame(animate)  // Continue animation
+
+      this.updatePositions()
+      this.frameId = requestAnimationFrame(animate)
     }
     animate()
   }
@@ -418,6 +399,10 @@ class QuantumPropertyCloud {
 
   destroy() {
     this.stop()
+    if (this._resizeObserver) {
+      this._resizeObserver.disconnect()
+      this._resizeObserver = null
+    }
   }
 }
 
@@ -430,7 +415,7 @@ export default function QuantumImmersiveSection({ frontScale = 1.5, frontXOffset
   const cloudRef = useRef(null)
 
   const [currentIndex, setCurrentIndex] = useState(0)
-  const [isHovered, setIsHovered] = useState(false)
+  const [isEngaged, setIsEngaged] = useState(false)
   const [isInView, setIsInView] = useState(false)
   const [scrollProgress, setScrollProgress] = useState(0)
   const [showAIAnalysis, setShowAIAnalysis] = useState(false)
@@ -493,14 +478,34 @@ export default function QuantumImmersiveSection({ frontScale = 1.5, frontXOffset
     return () => window.removeEventListener('scroll', handleScroll)
   }, [])
 
+  // Disengage on click outside section or Escape key
+  useEffect(() => {
+    if (!isEngaged) return
+
+    const onClickOutside = (e) => {
+      if (sectionRef.current && !sectionRef.current.contains(e.target)) {
+        setIsEngaged(false)
+      }
+    }
+    const onKeyDown = (e) => {
+      if (e.key === 'Escape') setIsEngaged(false)
+    }
+
+    document.addEventListener('click', onClickOutside)
+    document.addEventListener('keydown', onKeyDown)
+    return () => {
+      document.removeEventListener('click', onClickOutside)
+      document.removeEventListener('keydown', onKeyDown)
+    }
+  }, [isEngaged])
+
   // SCROLL-WHEEL NAVIGATION (also supports clicking radio buttons)
   useEffect(() => {
     let wheelTimeout
     const wheelAccumulator = { value: 0 }  // Accumulate small scroll movements
 
     const onWheel = (e) => {
-      // Only respond to wheel when hovering and section is visible
-      if (!sphereRef.current || !isHovered || !isInView) return
+      if (!sphereRef.current || !isEngaged || !isInView) return
 
       e.preventDefault()  // Prevent page scroll
       e.stopPropagation()
@@ -540,7 +545,7 @@ export default function QuantumImmersiveSection({ frontScale = 1.5, frontXOffset
       window.removeEventListener('wheel', onWheel)
       clearTimeout(wheelTimeout)
     }
-  }, [isHovered, isInView])
+  }, [isEngaged, isInView])
 
   const currentProperty = properties[currentIndex]
 
@@ -813,13 +818,15 @@ Trophy properties in Brentwood consistently outperform market. Expected 12-15% a
             ref={sphereRef}
             className="absolute inset-0 w-full h-full"
           >
-            {/* Interaction Zone - Narrower area for hover detection with transparent padding */}
+            {/* Interaction Zone - Click to engage, click outside or Escape to disengage */}
             <div
               className="absolute inset-y-0 left-6 right-6 h-full"
-              onMouseEnter={() => setIsHovered(true)}  // Enable scroll interaction on hover
-              onMouseLeave={() => setIsHovered(false)}  // Disable scroll interaction
+              onClick={(e) => {
+                e.stopPropagation()
+                setIsEngaged(true)
+              }}
               style={{
-                cursor: isHovered ? 'grab' : 'default'  // Visual feedback for interaction
+                cursor: isEngaged ? 'grab' : 'pointer'
               }}
             />
             
@@ -969,47 +976,24 @@ Trophy properties in Brentwood consistently outperform market. Expected 12-15% a
                 {/* Interaction Hints - Guide users on how to navigate */}
                 <div className="text-right hidden sm:block">
                   <div className="text-white/60 text-sm animate-pulse">
-                    {isHovered ? (
-                      // Show scroll hint when hovering
+                    {isEngaged ? (
                       <div className="flex items-center gap-2">
                         <span>Scroll to explore</span>
-                        <svg
-                          className="w-4 h-4"
-                          fill="none"
-                          stroke="currentColor"
-                          viewBox="0 0 24 24"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={2}
-                            d="M19 14l-7 7m0 0l-7-7m7 7V3"
-                          />
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 14l-7 7m0 0l-7-7m7 7V3" />
                         </svg>
                       </div>
                     ) : (
-                      // Show hover hint when not hovering
                       <div className="flex items-center gap-2">
-                        <span>Hover to interact</span>
-                        <svg
-                          className="w-4 h-4"
-                          fill="none"
-                          stroke="currentColor"
-                          viewBox="0 0 24 24"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={2}
-                            d="M15 15l-2 5L9 9l11 4-5 2z"
-                          />
+                        <span>Click to interact</span>
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 15l-2 5L9 9l11 4-5 2z" />
                         </svg>
                       </div>
                     )}
                   </div>
-                  {/* Navigation hint - both scroll and click work */}
                   <div className="mt-2 text-xs text-white/40">
-                    Scroll wheel or click dots
+                    {isEngaged ? 'Press Esc to exit • Scroll wheel or click dots' : 'Click anywhere on the sphere'}
                   </div>
                 </div>
               </div>

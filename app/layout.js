@@ -1,6 +1,5 @@
 import './globals.css'
-import Navigation from '@/components/Navigation'
-import Footer from '@/components/Footer'
+import LayoutShell from '@/components/LayoutShell'
 
 export const metadata = {
   metadataBase: new URL('https://sarahthompsonrealty.com'),
@@ -55,11 +54,7 @@ export default function RootLayout({ children }) {
         <link rel="dns-prefetch" href="https://www.widgetfied.com" />
       </head>
       <body className="antialiased">
-        <Navigation />
-        <main className="min-h-screen">
-          {children}
-        </main>
-        <Footer />
+        <LayoutShell>{children}</LayoutShell>
       </body>
     </html>
   )
