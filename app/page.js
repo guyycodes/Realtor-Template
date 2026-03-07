@@ -160,7 +160,7 @@ export default function Home() {
                     <span className="relative z-10">Explore Listings</span>
                     <div className="absolute inset-0 bg-accent-gold transform -translate-x-full group-hover:translate-x-0 transition-transform duration-300"></div>
                   </Link>
-                  <BookingWidget id="hero-booking" className="inline-block" />
+                  <BookingWidget id="hero-booking" className="hidden lg:inline-block" />
                 </div>
 
                 {/* Stats - Minimalist Design */}
